@@ -1,3 +1,4 @@
+import { domCache } from './domCache.js';
 (
   args = {
     doHighlightElements: true,
@@ -984,6 +985,29 @@
     return id;
   }
 
+<<<<<<< HEAD
+    // Function to traverse the DOM and create nested JSON
+    function buildDomTree(node, parentIframe = null) {
+        
+        if (!node) return null;
+
+        const cachedTree = domCache.getCachedDom(node);
+        if (cachedTree) {
+            return cachedTree;
+        }
+        // Special case for text nodes
+        if (node.nodeType === Node.TEXT_NODE) {
+            const textContent = node.textContent.trim();
+            if (textContent && isTextNodeVisible(node)) {
+                return {
+                    type: "TEXT_NODE",
+                    text: textContent,
+                    isVisible: true,
+                };
+            }
+            return null;
+        }
+=======
   // After all functions are defined, wrap them with performance measurement
   // Remove buildDomTree from here as we measure it separately
   highlightElement = measureTime(highlightElement);
@@ -995,6 +1019,7 @@
   getEffectiveScroll = measureTime(getEffectiveScroll);
 
   const rootId = buildDomTree(document.body);
+>>>>>>> upstream/main
 
   // Clear the cache before starting
   DOM_CACHE.clearCache();
@@ -1012,10 +1037,96 @@
       }
     });
 
+<<<<<<< HEAD
+            // Add viewport and scroll information
+            nodeData.viewport = {
+                scrollX: Math.round(scrollX),
+                scrollY: Math.round(scrollY),
+                width: window.innerWidth,
+                height: window.innerHeight
+            };
+        }
+
+        // Copy all attributes if the node is an element
+        if (node.nodeType === Node.ELEMENT_NODE && node.attributes) {
+            // Use getAttributeNames() instead of directly iterating attributes
+            const attributeNames = node.getAttributeNames?.() || [];
+            for (const name of attributeNames) {
+                nodeData.attributes[name] = node.getAttribute(name);
+            }
+        }
+
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            const isInteractive = isInteractiveElement(node);
+            const isVisible = isElementVisible(node);
+            const isTop = isTopElement(node);
+
+            nodeData.isInteractive = isInteractive;
+            nodeData.isVisible = isVisible;
+            nodeData.isTopElement = isTop;
+
+            // Highlight if element meets all criteria and highlighting is enabled
+            if (isInteractive && isVisible && isTop) {
+                nodeData.highlightIndex = highlightIndex++;
+                if (doHighlightElements) {
+                    if(focusHighlightIndex >= 0){
+                        if(focusHighlightIndex === nodeData.highlightIndex){
+                            highlightElement(node, nodeData.highlightIndex, parentIframe);
+                        }
+                    } else {
+                        highlightElement(node, nodeData.highlightIndex, parentIframe);
+                    }
+                }
+            }
+        }
+
+        // Only add iframeContext if we're inside an iframe
+        // if (parentIframe) {
+        //     nodeData.iframeContext = `iframe[src="${parentIframe.src || ''}"]`;
+        // }
+
+        // Only add shadowRoot field if it exists
+        if (node.shadowRoot) {
+            nodeData.shadowRoot = true;
+        }
+
+        // Handle shadow DOM
+        if (node.shadowRoot) {
+            const shadowChildren = Array.from(node.shadowRoot.childNodes).map(child =>
+                buildDomTree(child, parentIframe)
+            );
+            nodeData.children.push(...shadowChildren);
+        }
+
+        // Handle iframes
+        if (node.tagName === 'IFRAME') {
+            try {
+                const iframeDoc = node.contentDocument || node.contentWindow.document;
+                if (iframeDoc) {
+                    const iframeChildren = Array.from(iframeDoc.body.childNodes).map(child =>
+                        buildDomTree(child, node)
+                    );
+                    nodeData.children.push(...iframeChildren);
+                }
+            } catch (e) {
+                console.warn('Unable to access iframe:', node);
+            }
+        } else {
+            const children = Array.from(node.childNodes).map(child =>
+                buildDomTree(child, parentIframe)
+            );
+            nodeData.children.push(...children);
+        }
+
+        domCache.cacheDomTree(node, nodeData);
+
+        return nodeData;
+=======
     // Add some useful derived metrics
     if (PERF_METRICS.buildDomTreeBreakdown.buildDomTreeCalls > 0) {
       PERF_METRICS.buildDomTreeBreakdown.averageTimePerNode =
         PERF_METRICS.buildDomTreeBreakdown.totalTime / PERF_METRICS.buildDomTreeBreakdown.buildDomTreeCalls;
+>>>>>>> upstream/main
     }
 
     PERF_METRICS.buildDomTreeBreakdown.timeInChildCalls =
