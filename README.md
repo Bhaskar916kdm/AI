@@ -48,7 +48,7 @@ async def main():
         task="Compare the price of gpt-4o and DeepSeek-V3",
         llm=ChatOpenAI(model="gpt-4o"),
     )
-    await agent.run()
+        await agent.run()
 
 asyncio.run(main())
 ```
